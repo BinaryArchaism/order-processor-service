@@ -1,0 +1,7 @@
+# TODO secrets to vault 
+database:
+  username: root
+  password:
+  host: localhost
+  port: 4000
+  database: processor
