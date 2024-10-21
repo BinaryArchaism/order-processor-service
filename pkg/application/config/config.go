@@ -1,9 +1,11 @@
 package config
 
 import (
+	"context"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -16,6 +18,11 @@ type DBConfig struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Database string `yaml:"database"`
+
+	ConnMaxLifetime int `yaml:"conn_max_lifetime"`
+	MaxOpenConns    int `yaml:"max_open_conns"`
+	MaxIdleConns    int `yaml:"max_idle_conns"`
+	ConnMaxIdleTime int `yaml:"conn_max_idle_time"`
 }
 
 func (dbCfg DBConfig) ConnectionString() string {
@@ -23,8 +30,7 @@ func (dbCfg DBConfig) ConnectionString() string {
 		dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.Database)
 }
 
-func Parse() (Config, error) {
-	fmt.Println(os.Getwd())
+func InitConfig(_ context.Context) (Config, error) {
 	yamlFile, err := os.ReadFile("config/config.yaml")
 	if err != nil {
 		return Config{}, err

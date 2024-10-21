@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"embed"
-	"github.com/BinaryArchaism/order-processor/internal/config"
-	"github.com/rs/zerolog/log"
 	"time"
+
+	"github.com/BinaryArchaism/order-processor/pkg/application/config"
+	"github.com/rs/zerolog/log"
 
 	"github.com/pressly/goose/v3"
 
@@ -37,16 +38,16 @@ func Connect(ctx context.Context, cfg config.Config) (*TiDBConnection, error) {
 		return nil, err
 	}
 
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(10)
-	db.SetConnMaxIdleTime(time.Minute * 3)
+	db.SetConnMaxLifetime(time.Minute * time.Duration(cfg.DBConfig.ConnMaxLifetime))
+	db.SetConnMaxIdleTime(time.Minute * time.Duration(cfg.DBConfig.ConnMaxIdleTime))
+	db.SetMaxOpenConns(cfg.DBConfig.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.DBConfig.MaxIdleConns)
 
 	go func() {
 		<-ctx.Done()
-		err := db.Close()
-		if err != nil {
-			log.Err(err).Msg("Error closing database connection")
+		closeErr := db.Close()
+		if closeErr != nil {
+			log.Err(closeErr).Msg("Error closing database connection")
 			return
 		}
 		log.Info().Msg("Database connection closed")
